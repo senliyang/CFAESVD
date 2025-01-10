@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Nov 25 16:44:39 2021
 
-@author: qianyuqing
-"""
+
 import scipy.io as scio
 from sklearn.metrics import confusion_matrix
 import numpy as np
@@ -20,7 +17,7 @@ np.random.seed(2024)
 #     return y_train , y_label
 def get_train_label(data, cv_index, cv_i):
     """
-    根据交叉验证的索引分配训练标签
+    
     """
     y_train = np.zeros_like(data)
     y_label = np.zeros_like(data)
