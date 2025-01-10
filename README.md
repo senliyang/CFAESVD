@@ -8,11 +8,6 @@ python                    3.9
 scipy                     1.5.2            
 tensorflow                2.6.2  
 # Usage
-Calculate the integrated similarity between microbes and diseases
-python get_weight_MKL_CKA.py
-
-Extract the linear features of microbes and diseases
-python matrix_svd.py
-
-Run this model
-python main.py
+Calculate the integrated similarity between microbes and diseases           python get_weight_MKL_CKA.py
+Extract the linear features of microbes and diseases                python matrix_svd.py
+Run this model          python main.py
