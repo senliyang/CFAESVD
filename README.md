@@ -1,5 +1,22 @@
-# Overview
-CFAESVD:A Microbe–Diseases Association Identifcation Framework Based on Multi-Kernel Autoencoder and Singular Value Decomposition
+# CFAESVD:Predicting Microbe-Diseases Associations Based on Multi-Kernel Autoencoder and Singular Value Decomposition
+Extensive research has shown that microbial communities are closely linked to the development of
+many complex human diseases. Therefore, identifying potential microbe-disease associations is essen-
+tial for improving diagnosis, prognosis, and treatment strategies. Traditional biomedical experiments,
+however, tend to be costly, time-consuming, and labor-intensive. To address these limitations, we pro-
+pose a novel computational model, CFAESVD, for predicting potential microbe-diseases associations.
+The model begins by integrating data from three different databases and employs a Centered Ker-
+nel Alignment-based Multi-Kernel Learning (CKA-MKL) algorithm to fuse multi-source features of
+microbes and diseases based on known associations. It then utilizes three distinct modules to extract
+feature representations: a four-layer autoencoder to capture the nonlinear features of diseases, a Singu-
+lar Value Decomposition (SVD) module to extract linear features for both microbes and diseases, and
+a Graph Attention Encoder (GATE) module for the nonlinear features of microbes. These features are
+concatenated into feature vectors representing microbe-disease pairs. Finally, these vectors are input
+into an modifyed Cascade Forest model for prediction. Experimental results show that under five-fold
+cross-validation, the model achieves an AUC of 0.9891 and an AUPR of 0.9865, surpassing several
+advanced prediction models. Additionally, case studies confirm the CFAESVD model’s effectiveness
+in predicting microbial associations with conditions such as obesity and Crohn’s disease, further
+validating its reliability.CFAESVD is publicly available at https://github.com/senliyang/CFAESVD.
+# Flowchart
 ![image](https://github.com/senliyang/CFAESVD/blob/main/CFAESVD/CFAESVD2.png)
 # Requirements
 numpy                     1.19.2          
