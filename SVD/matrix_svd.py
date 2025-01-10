@@ -10,7 +10,7 @@ pca_maxiter = 200
 
 def vector_to_diagonal(vector):
     """
-    将向量放在对角矩阵的对角线上
+    
     :param vector:
     :return:
     """
@@ -29,7 +29,7 @@ interMatrix = interMatrix.astype('float')
 U, S, VT = svds(sp.csr_matrix(interMatrix), k=pca_dim, maxiter=pca_maxiter)
 S = vector_to_diagonal(S)
 
-print('RNA vector representation shape:')
+print('microbe vector representation shape:')
 print(U.shape)
 print('Singular value matrix：')
 print(np.sum(S, axis=0))
