@@ -17,7 +17,7 @@ advanced prediction models. Additionally, case studies confirm the CFAESVD model
 in predicting microbial associations with conditions such as obesity and Crohn’s disease, further
 validating its reliability.CFAESVD is publicly available at https://github.com/senliyang/CFAESVD.
 # Flowchart
-![image](https://github.com/senliyang/CFAESVD/blob/main/CFAESVD/CFAESVD2.png)
+![image](https://github.com/senliyang/CFAESVD/blob/main/CFAESVD/CFAESVD3.png)
 # Requirements
 numpy                     1.19.2          
 pandas                    1.1.5           
