@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 
-
 min 1/2 XT*P*X + qT*X
     Gx <= h
     Ax = b
