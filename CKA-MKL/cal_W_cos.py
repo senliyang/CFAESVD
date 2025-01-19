@@ -6,7 +6,6 @@
 import numpy as np
 np.random.seed(2024)
 
-
 def get_WW(t1 , t2):
     '''
     
