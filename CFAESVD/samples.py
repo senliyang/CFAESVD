@@ -5,7 +5,6 @@ import numpy as np
 import random
 from keras.layers import Dense, Input, dot
 from keras.models import Model
-
 def get_all_samples(conjunction):
     pos = []
     neg = []
