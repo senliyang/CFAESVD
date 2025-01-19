@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 import scipy.io as scio
 from sklearn.metrics import confusion_matrix
 import numpy as np
