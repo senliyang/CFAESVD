@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def get_metrics(real_score, predict_score):
     sorted_predict_score = np.array(
         sorted(list(set(np.array(predict_score).flatten()))))
