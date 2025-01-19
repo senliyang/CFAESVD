@@ -8,7 +8,6 @@ from cal_W_cos import get_WW
 from Moreau_Brota import get_Med,get_mu
 from cvxopt  import matrix
 from kernel import  kernel_normalized
-
 def load_kernel_from_file(file_path):
     """"""
     return np.loadtxt(file_path)
