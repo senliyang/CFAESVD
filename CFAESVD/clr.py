@@ -11,7 +11,6 @@ def cyclic_learning_rate(global_step,
                          gamma=0.99994,
                          mode='triangular',
                          name=None):
-
     if global_step is None:
         raise ValueError("global_step is required for cyclic_learning_rate.")
     with ops.name_scope(name, "CyclicLearningRate",
