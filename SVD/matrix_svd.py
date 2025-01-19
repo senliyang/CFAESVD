@@ -7,7 +7,6 @@ from scipy import sparse as sp
 pca_dim = 90
 pca_maxiter = 200
 
-
 def vector_to_diagonal(vector):
     """
     
