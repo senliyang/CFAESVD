@@ -8,7 +8,6 @@ def generate_f1(D,train_samples,feature_m,d_data1,feature_MFm, feature_MFd):
     np.random.seed(seed)
     vect_len1 = feature_m.shape[1]
     vect_len2 = d_data1.shape[1]
-
     train_n = train_samples.shape[0]
     train_feature = np.zeros([train_n, 2 * vect_len1 + 2 * D])
     # train_feature = np.zeros([train_n, vect_len1+vect_len2])
