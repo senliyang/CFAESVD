@@ -9,7 +9,6 @@ from keras import utils
 
 def data_process(d_sim,new_association):
 
-
     R_A = np.repeat(new_association, repeats=134, axis=0)#(157718,134)
     # print(R_A.shape)
     sd = nm.repmat(d_sim, 1177, 1)#(157718,134)
