@@ -14,7 +14,6 @@ import argparse
 
 
 
-
 class GATETrainer():
 
     def __init__(self, args):
