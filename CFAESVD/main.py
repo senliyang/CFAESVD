@@ -50,9 +50,8 @@ for s in itertools.product(m_threshold,epochs):
             fold += 1
             train_samples = samples[train_index, :]
             val_samples = samples[val_index, :]
-            ## 复制原始的关联矩阵
             new_association = association.copy()
-            ## 将验证集的微生物-疾病关联设置为0
+            #将验证集的微生物-疾病关联设置为0
             for i in val_samples:
                 new_association[i[0], i[1]] = 0
 
