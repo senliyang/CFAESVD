@@ -4,7 +4,6 @@ from samples import *
 from four_AE import *
 from GAE_trainer import *
 from GAE import *
-from sklearn.neighbors import KNeighborsClassifier
 from generate_f1 import *
 from numpy import interp
 from metric import *
@@ -32,12 +31,10 @@ mean_fpr=np.linspace(0,1,100)
 
 for s in itertools.product(m_threshold,epochs):
 
-        
         association = pd.read_csv("similarity and feature/MD_A.csv", header=0, index_col=0).to_numpy()
         samples = get_all_samples(association)
 
         m_fusion_sim = pd.read_csv("similarity and feature/CKA-microbe.txt", header=None, index_col=None, sep=' ').to_numpy()
-
         d_fusion_sim = pd.read_csv("similarity and feature/CKA-disease.txt", header=None, index_col=None, sep=' ').to_numpy()
 
         kf = KFold(n_splits=n_splits, shuffle=True)
@@ -51,7 +48,7 @@ for s in itertools.product(m_threshold,epochs):
             train_samples = samples[train_index, :]
             val_samples = samples[val_index, :]
             new_association = association.copy()
-            #将验证集的微生物-疾病关联设置为0
+            #将验证集的关联设为0
             for i in val_samples:
                 new_association[i[0], i[1]] = 0
 
@@ -94,7 +91,6 @@ for s in itertools.product(m_threshold,epochs):
             print('[aupr, auc, f1_score, accuracy, recall, specificity, precision]',
                   get_metrics(val_label, y_score))
 
-
         print("==================================================")
         print(result / n_splits)
 
@@ -115,11 +111,3 @@ for s in itertools.product(m_threshold,epochs):
         plt.title('ROC')
         plt.legend(loc='lower right')
         plt.show()
-
-
-
-
-
-
-
-
