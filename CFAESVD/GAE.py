@@ -1,6 +1,5 @@
 import tensorflow._api.v2.compat.v1 as tf
 
-
 class GATE():
 
     def __init__(self, hidden_dims, lambda_):
