@@ -17,7 +17,6 @@ from sklearn.ensemble import RandomForestClassifier,ExtraTreesClassifier
 from sklearn.metrics import auc,precision_score, recall_score, f1_score,accuracy_score
 warnings.filterwarnings("ignore")
 
-
 # parameter
 n_splits = 5
 classifier_epochs = 50
@@ -29,13 +28,85 @@ tprs=[]
 aucs=[]
 mean_fpr=np.linspace(0,1,100)
 
+#cosine similarity
+def cos_sim(MD):
+    m = MD.shape[0]
+    n = MD.shape[1]
+    cos_MS1 = []
+    cos_DS1 = []
+    for i in range(m):
+        for j in range(m):
+            a = MD[i, :]
+            b = MD[j, :]
+            a_norm = np.linalg.norm(a)
+            b_norm = np.linalg.norm(b)
+            if a_norm != 0 and b_norm != 0:
+                cos_ms = np.dot(a, b) / (a_norm * b_norm)
+                cos_MS1.append(cos_ms)
+            else:
+                cos_MS1.append(0)
+
+    for i in range(n):
+        for j in range(n):
+            a1 = MD[:, i]
+            b1 = MD[:, j]
+            a1_norm = np.linalg.norm(a1)
+            b1_norm = np.linalg.norm(b1)
+            if a1_norm != 0 and b1_norm != 0:
+                cos_ds = np.dot(a1, b1) / (a1_norm * b1_norm)
+                cos_DS1.append(cos_ds)
+            else:
+                cos_DS1.append(0)
+
+    cos_MS1 = np.array(cos_MS1).reshape(m, m)
+    cos_DS1 = np.array(cos_DS1).reshape(n, n)
+    return cos_MS1, cos_DS1
+#Gaussian interaction profile kernel similarity
+def r_func(MD):
+    m = MD.shape[0]
+    n = MD.shape[1]
+    EUC_MD = np.linalg.norm(MD, ord=2, axis=1, keepdims=False)
+    EUC_DL = np.linalg.norm(MD.T, ord=2, axis=1, keepdims=False)
+    EUC_MD = EUC_MD ** 2
+    EUC_DL = EUC_DL ** 2
+    sum_EUC_MD = np.sum(EUC_MD)
+    sum_EUC_DL = np.sum(EUC_DL)
+    rl = 1 / ((1 / m) * sum_EUC_MD)
+    rt = 1 / ((1 / n) * sum_EUC_DL)
+    return rl, rt
+def Gau_sim(MD, rl, rt):
+    MD = np.mat(MD)
+    DL = MD.T
+    m = MD.shape[0]
+    n = MD.shape[1]
+    c = []
+    d = []
+    for i in range(m):
+        for j in range(m):
+            b_1 = MD[i] - MD[j]
+            b_norm1 = np.linalg.norm(b_1, ord=None, axis=1, keepdims=False)
+            b1 = b_norm1 ** 2
+            b1 = math.exp(-rl * b1)
+            c.append(b1)
+    for i in range(n):
+        for j in range(n):
+            b_2 = DL[i] - DL[j]
+            b_norm2 = np.linalg.norm(b_2, ord=None, axis=1, keepdims=False)
+            b2 = b_norm2 ** 2
+            b2 = math.exp(-rt * b2)
+            d.append(b2)
+    GMM = np.mat(c).reshape(m, m)
+    GDD = np.mat(d).reshape(n, n)
+    return GMM, GDD
+
 for s in itertools.product(m_threshold,epochs):
 
         association = pd.read_csv("similarity and feature/MD_A.csv", header=0, index_col=0).to_numpy()
         samples = get_all_samples(association)
 
-        m_fusion_sim = pd.read_csv("similarity and feature/CKA-microbe.txt", header=None, index_col=None, sep=' ').to_numpy()
-        d_fusion_sim = pd.read_csv("similarity and feature/CKA-disease.txt", header=None, index_col=None, sep=' ').to_numpy()
+        #加载fun_MS.txt,sem_DS.txt
+        fun_sim = pd.read_csv("fun_MS.txt", header=None, index_col=None, sep=' ').to_numpy()
+        sem_sim = pd.read_csv("sem_DS.txt", header=None, index_col=None, sep=' ').to_numpy()
 
         kf = KFold(n_splits=n_splits, shuffle=True)
 
@@ -51,6 +122,11 @@ for s in itertools.product(m_threshold,epochs):
             #将验证集的关联设为0
             for i in val_samples:
                 new_association[i[0], i[1]] = 0
+
+            cos_MS, cos_DS = cos_sim(new_association)
+                
+            rm, rt = r_func(new_association)
+            GaM, GaD = Gau_sim(new_association, rm, rt)
 
             # Microbe features extraction from GATE
             m_network = sim_thresholding(m_fusion_sim, s[0])
