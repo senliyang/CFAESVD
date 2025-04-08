@@ -7,6 +7,12 @@ from GAE import *
 from generate_f1 import *
 from numpy import interp
 from metric import *
+import numpy as np
+from cvxopt import solvers, matrix
+from sklearn import metrics
+from cvxopt  import matrix
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import roc_auc_score,average_precision_score
 from sklearn.svm import SVC
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
@@ -99,14 +105,363 @@ def Gau_sim(MD, rl, rt):
     GDD = np.mat(d).reshape(n, n)
     return GMM, GDD
 
+def get_CKA_Wi(P, q, G, h, A, b):
+    '''
+    数值如下：除了b都是matrix'
+    l = 6
+    P = get_P(train_x_k_list , gamma_list)
+    q = get_q(train_x_k_list , train_y)
+    G = np.identity(l)
+    h = np.zeros([l,1])
+    A = np.ones([1,l])
+    b=matrix(1.)
+    '''
+    P = matrix(P)
+    q = matrix(q)
+    G = matrix(G)
+    h = matrix(h)
+    A = matrix(A)
+    sol = solvers.qp(P, q, G, h, A, b)
+    print(sol['x'])
+    return (sol['x'])
+
+
+def get_trace(a, b):
+    '''
+    计算<a , b>F
+    Trace(a.T*b)
+    '''
+    return np.trace(np.dot(a.T, b))
+
+
+def get_P(train_x_k_list):
+    '''
+    获得P矩阵
+    input:train_x_list 训练集高斯矩阵 集合
+    output: P矩阵
+    '''
+    l = len(train_x_k_list)
+    n = len(train_x_k_list[0])  # n行
+    # 计算Un Un = In - (1/n)ln*ln.T
+    In = np.identity(n)
+    ln = np.ones([n, 1])
+    Un = In - (1 / n) * np.dot(ln, ln.T)
+    # 计算P
+    P = np.zeros([l, l])
+    for i in range(l):
+        for j in range(l):
+            P[i, j] = get_trace(np.dot(np.dot(Un, train_x_k_list[i]), Un), np.dot(np.dot(Un, train_x_k_list[j]), Un.T))
+            # P[j,i] = P[i,j]#对称矩阵
+    return P
+
+
+def get_q(train_x_k_list, ideal_kernel):
+    '''
+    input:
+        train_x_k_list 训练集高斯矩阵
+    output:
+        train_y 标签
+    '''
+    l = len(train_x_k_list)
+    n = len(train_x_k_list[0])
+    # 计算Un Un = In - (1/n)ln*ln.T
+    In = np.identity(n)
+    ln = np.ones([n, 1])
+    Un = In - (1 / n) * np.dot(ln, ln.T)
+    # 计算Ki 理想核
+    Ki = ideal_kernel
+    # 计算a
+    a = np.zeros([l, 1])
+    for i in range(l):
+        a[i, 0] = get_trace(np.dot(np.dot(Un, train_x_k_list[i]), Un), Ki)
+    return a
+
+
+def get_WW(t1 , t2):
+    '''
+    计算两个矩阵的余弦相似度
+    '''
+    fenzi = np.trace(np.dot(t1,t2))
+    fenmu = ((np.trace(np.dot(t1 , t1)))*(np.trace(np.dot(t2 , t2))))**0.5
+    return round(fenzi / fenmu , 4)
+
+
+def getMB(np_array):
+    """
+    特征归一化算法 Moreau_Brota
+    input:
+        np_array 输入特征矩阵
+    output:
+        Broto_array归一化后的特征矩阵
+    """
+    Max = np_array.max(axis=0)  # 求平均值
+    Min = np_array.min(axis=0)  # 求方差
+    Broto_array = (np_array - Min) / (Max - Min)  # 归一化后的数组#广播#点成*#乘积dot
+    return Broto_array  # 两种归一化方法
+
+
+def getMB_double(train, test):
+    """
+    input:
+        train
+        test
+    output:
+        MB_ed train
+        MB_ed test
+    """
+    n = len(train)
+    train_test = np.vstack([train, test])  # 垂直拼接
+    Max = train_test.max(axis=0)  # 求平均值
+    Min = train_test.min(axis=0)  # 求方差
+    Broto_array = (train_test - Min) / (Max - Min)  # 归一化后的数组#广播#点成*#乘积dot
+    return Broto_array[0:n, :], Broto_array[n:, :]
+
+
+def get_z(array):
+    '''
+    z-score 归一化算法
+    x* = （ x- 均值 ） / 标准差
+    '''
+    AVE = array.mean(axis=0)
+    STD = array.std(axis=0)
+    return (array - AVE) / STD
+
+
+def get_Med(array):
+    '''
+    对参数归一化
+    M(i,j)/[M(j,j)**0.5  *  M(i,i)**0.5]
+    '''
+    l = len(array)
+    re = np.zeros([l, l])
+    for i in range(l):
+        for j in range(l):
+            re[i][j] = array[i][j] / ((array[i][i] ** 0.5) * (array[j][j] ** 0.5))
+    return re
+
+
+def get_mu(array):
+    s = 0
+    for i in range(len(array)):
+        s = s + array[i] ** 2
+    return array / (s ** 0.5)
+
+
+def kernel_gussian(x, gamma):
+    # 相似性矩阵计算
+    n = len(x)
+    kernel = np.zeros([n, n])
+    for i in range(n):
+        for j in range(i, n):
+            kernel[i, j] = np.sum((x[i, :] - x[j, :]) ** 2)
+            kernel[j, i] = kernel[i, j]
+
+    return np.exp(-gamma * kernel)
+
+
+def kernel_cosine(x, mu, sigma):
+    # Calculates the link indicator kernel from a graph adjacency by cosine similiarity
+    n = len(x)
+    m = len(x[0])
+    # Add Gaussian random noise matrix
+    x = x + np.random.normal(mu, sigma, (n, m))
+    kernel = np.zeros([n, n])
+    for i in range(n):
+        for j in range(i, n):
+            kernel[i, j] = np.dot(x[i, :], x[j, :].T) / (np.linalg.norm(x[i, :]) * np.linalg.norm(x[j, :]))
+            kernel[j, i] = kernel[i, j]
+    return kernel
+
+
+def kernel_corr(x, mu, sigma):
+    # Calculates the link indicator kernel from a graph adjacency by pairwise linear correlation coefficient
+    n = len(x)
+    m = len(x[0])
+    # Add Gaussian random noise matrix
+    x = x + np.random.normal(mu, sigma, (n, m))
+    return np.corrcoef(x)
+
+
+def kernel_MI(x):
+    n = len(x)
+    m = len(x[0])
+    kernel = np.zeros([n, n])
+    for i in range(n):
+        for j in range(i, n):
+            kernel[i, j] = metrics.normalized_mutual_info_score(x[i, :], x[j, :])
+            kernel[j, i] = kernel[i, j]
+    return kernel
+
+
+def kernel_normalized(k):
+    # 理想核矩阵的归一化
+    n = len(k)
+
+    k = np.abs(k)
+    index_nozeros = k.nonzero()
+    min_value = min(k[index_nozeros])
+    k[np.where(k == 0)] = min_value
+
+    diag = np.resize(np.diagonal(k), [n, 1]) ** 0.5
+    k_nor = k / (np.dot(diag, diag.T))
+    return k_nor
+
+
+
+
+def load_kernel_from_file(file_path):
+    """"""
+    return np.loadtxt(file_path)
+def get_n_weight(k_train_list ,ideal_kernel ,lambd):
+    '''
+    input：
+        k_train_list
+    output：
+        weight weight
+    '''
+    n = len(k_train_list)
+    Wij = np.zeros([n,n])
+    for i in range(n):#Wij
+        for j in range(i,n):
+            Wij[i][j] = get_WW(k_train_list[i],k_train_list[j])
+            Wij[j][i] = Wij[i][j]
+    D = Wij.sum(axis = 0)
+    Dii = np.zeros([n,n])
+    for i in range(n):
+        Dii[i][i] = D[i]
+    L = Dii - Wij
+    L=abs(L)
+    M = get_Med( get_P(k_train_list) ) #归一化
+    P = M + lambd*L
+    a = get_mu ( get_q(k_train_list , ideal_kernel) )
+    q = -1*a
+    G = -1 * np.identity(n)
+    h = np.zeros([n,1])
+    A = np.ones([1,n])
+    b=matrix(1.)
+    return get_CKA_Wi(P , q , G , h , A , b)
+
+
+def get_train_label(y, cv_index, cv_i):
+    n_drug = len(y)
+    n_effect = len(y[0])
+    y = y.reshape(n_drug * n_effect)
+    y_label = y[cv_index == cv_i]
+    y[np.where(cv_index == cv_i)] = 0
+    y_train = y
+    y_train = y_train.reshape([n_drug, n_effect])
+    return y_train, y_label
+
+
+def get_pre(y_pre, cv_index, cv_i):
+    n_drug = len(y_pre)
+    n_effect = len(y_pre[0])
+    y_pre = y_pre.reshape(n_drug * n_effect)
+    pre = y_pre[cv_index == cv_i]
+    return pre
+
+
+def get_auc_aupr(y_true, y_pre):
+    auc_score = roc_auc_score(y_true, y_pre)
+    aupr_score = average_precision_score(y_true, y_pre)
+    return auc_score, aupr_score
+
+
+def wknkn(y, Similar_1, Similar_2, knn, miu):
+    n = len(y)
+    m = len(y[0])
+
+    y_d = np.zeros([n, m])
+    y_t = np.zeros([m, n])
+
+    index = np.argsort(Similar_1, 1)
+    index = index[:, ::-1]
+    index = index[:, :knn]
+
+    for d in range(n):
+        w_i = np.zeros([1, knn])
+        for ii in range(knn):
+            w_i[0, ii] = (miu ** ii) * Similar_1[d, index[d, ii]]
+        # normalization term
+        z_d = 1 / sum(Similar_1[d, index[d, :]])
+
+        y_d[d, :] = z_d * (np.dot(w_i, y[index[d, :], :]))
+
+    index = np.argsort(Similar_2, 1)
+    index = index[:, ::-1]
+    index = index[:, :knn]
+
+    for t in range(m):
+        w_i = np.zeros([1, knn])
+        for ii in range(knn):
+            w_i[0, ii] = (miu ** ii) * Similar_2[t, index[t, ii]]
+        # normalization term
+        z_t = 1 / sum(Similar_2[t, index[t, :]])
+
+        y_t[t, :] = z_t * (np.dot(w_i, y.T[index[t, :], :]))
+
+    y_dt = (y_d + y_t.T) / 2
+    f_new = np.fmax(y, y_dt)
+    return f_new
+
+
+def getACC(y_true, y_pre):
+    """
+    y_true是n*1维度数组
+    y_pre在模型计算后是1*n维数组
+        这里y_pre.resize(len(y_pre),1)已经经过变换！！！
+    """
+    length = len(y_true)
+    y_pre.resize(len(y_pre), 1)
+    right = np.count_nonzero(y_true == y_pre)
+    ACC = round(right / length, 4)
+    return ACC
+
+
+def my_confusion_matrix(y_true, y_pre):
+    """
+    y_true:numpy矩阵
+    获得con矩阵
+    TP  FP
+    TN  FN
+    """
+    y_pre.resize(len(y_pre), 1)
+    return confusion_matrix(y_true, y_pre)
+
+
+def getMCC(con):
+    TP = con[0, 0]
+    FN = con[0, 1]
+    FP = con[1, 0]
+    TN = con[1, 1]
+    MCC = (TP * TN - FP * FN) / ((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN)) ** 0.5
+    MCC = round(MCC, 4)
+    return MCC
+
+
+def getSN(con):
+    TP = con[0, 0]
+    FN = con[0, 1]
+    SN = TP / (TP + FN)
+    SN = round(SN * 100, 4)
+    return SN
+
+
+def getSP(con):
+    FP = con[1, 0]
+    TN = con[1, 1]
+    SP = TN / (TN + FP)
+    SP = round(SP * 100, 4)
+    return SP
+
 for s in itertools.product(m_threshold,epochs):
 
         association = pd.read_csv("similarity and feature/MD_A.csv", header=0, index_col=0).to_numpy()
         samples = get_all_samples(association)
 
         #加载fun_MS.txt,sem_DS.txt
-        fun_sim = pd.read_csv("fun_MS.txt", header=None, index_col=None, sep=' ').to_numpy()
-        sem_sim = pd.read_csv("sem_DS.txt", header=None, index_col=None, sep=' ').to_numpy()
+        fun_sim = pd.read_csv("fun_MS.txt", header=None, index_col=None, sep='\t').to_numpy()
+        sem_sim = pd.read_csv("sem_DS.txt", header=None, index_col=None, sep='\t').to_numpy()
 
         kf = KFold(n_splits=n_splits, shuffle=True)
 
@@ -119,22 +474,48 @@ for s in itertools.product(m_threshold,epochs):
             train_samples = samples[train_index, :]
             val_samples = samples[val_index, :]
             new_association = association.copy()
-            #将验证集的关联设为0
             for i in val_samples:
                 new_association[i[0], i[1]] = 0
 
             cos_MS, cos_DS = cos_sim(new_association)
-                
+            cos_MS = pd.DataFrame(cos_MS)  
+            cos_DS = pd.DataFrame(cos_DS) 
             rm, rt = r_func(new_association)
             GaM, GaD = Gau_sim(new_association, rm, rt)
+            GaM = pd.DataFrame(GaM)  
+            GaD = pd.DataFrame(GaD)
 
+            n_microbe = len(new_association)  
+            n_disease = len(new_association[0])     
+            np.random.seed(2024)
+            cv_index = np.random.randint(cv, size=n_microbe*n_disease)
+            print("cv_index分布:", np.bincount(cv_index))
+            k_train_list1 = [sem_sim,cos_DS,GaD]
+            y_train, y_label = get_train_label(new_association, cv_index, cv_i)
+            side_ideal_kernel = np.dot(y_train.T, y_train)
+            side_k_nor = kernel_normalized(side_ideal_kernel)
+            weights = get_n_weight(k_train_list1, side_k_nor, 0.8)
+            k_s1 = np.zeros([n_disease, n_disease])
+            for i in range(len(k_train_list)):
+                k_s1 = k_s1 + weights[i] * k_train_list1[i]
+            k_s1 = pd.DataFrame(k_s1)
+            k_train_list2 = [fun_sim,cos_MS,GaM]
+            y_train, y_label = get_train_label(new_association, cv_index, cv_i)
+            side_ideal_kernel = np.dot(y_train, y_train.T)
+            side_k_nor = kernel_normalized(side_ideal_kernel)
+            weights = get_n_weight(k_train_list2, side_k_nor, 0.8)
+            k_s2 = np.zeros([n_microbe, n_microbe])
+            for i in range(len(k_train_list)):
+                k_s2 = k_s2 + weights[i] * k_train_list2[i]
+            k_s2 = pd.DataFrame(k_s2)
+            
             # Microbe features extraction from GATE
-            m_network = sim_thresholding(m_fusion_sim, s[0])
+            m_network = sim_thresholding( k_s2, s[0])
             m_adj, meta_features = generate_adj_and_feature(m_network, new_association)
             m_features = get_gae_feature(m_adj, meta_features, s[1], 1)
 
             # Disease features extraction from four-layer auto-encoder
-            d_features = four_AE(d_fusion_sim, new_association)
+            d_features = four_AE(d_fusion_sim,  k_s1)
 
             # get feature and label
             train_feature, train_label = generate_f1(D, train_samples, m_features, d_features, SVD_mfeature, SVD_dfeature)
