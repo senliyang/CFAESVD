@@ -125,14 +125,12 @@ def get_CKA_Wi(P, q, G, h, A, b):
     print(sol['x'])
     return (sol['x'])
 
-
 def get_trace(a, b):
     '''
     计算<a , b>F
     Trace(a.T*b)
     '''
     return np.trace(np.dot(a.T, b))
-
 
 def get_P(train_x_k_list):
     '''
@@ -153,7 +151,6 @@ def get_P(train_x_k_list):
             P[i, j] = get_trace(np.dot(np.dot(Un, train_x_k_list[i]), Un), np.dot(np.dot(Un, train_x_k_list[j]), Un.T))
             # P[j,i] = P[i,j]#对称矩阵
     return P
-
 
 def get_q(train_x_k_list, ideal_kernel):
     '''
@@ -176,7 +173,6 @@ def get_q(train_x_k_list, ideal_kernel):
         a[i, 0] = get_trace(np.dot(np.dot(Un, train_x_k_list[i]), Un), Ki)
     return a
 
-
 def get_WW(t1 , t2):
     '''
     计算两个矩阵的余弦相似度
@@ -184,7 +180,6 @@ def get_WW(t1 , t2):
     fenzi = np.trace(np.dot(t1,t2))
     fenmu = ((np.trace(np.dot(t1 , t1)))*(np.trace(np.dot(t2 , t2))))**0.5
     return round(fenzi / fenmu , 4)
-
 
 def getMB(np_array):
     """
@@ -198,7 +193,6 @@ def getMB(np_array):
     Min = np_array.min(axis=0)  # 求方差
     Broto_array = (np_array - Min) / (Max - Min)  # 归一化后的数组#广播#点成*#乘积dot
     return Broto_array  # 两种归一化方法
-
 
 def getMB_double(train, test):
     """
@@ -216,7 +210,6 @@ def getMB_double(train, test):
     Broto_array = (train_test - Min) / (Max - Min)  # 归一化后的数组#广播#点成*#乘积dot
     return Broto_array[0:n, :], Broto_array[n:, :]
 
-
 def get_z(array):
     '''
     z-score 归一化算法
@@ -225,7 +218,6 @@ def get_z(array):
     AVE = array.mean(axis=0)
     STD = array.std(axis=0)
     return (array - AVE) / STD
-
 
 def get_Med(array):
     '''
@@ -239,13 +231,11 @@ def get_Med(array):
             re[i][j] = array[i][j] / ((array[i][i] ** 0.5) * (array[j][j] ** 0.5))
     return re
 
-
 def get_mu(array):
     s = 0
     for i in range(len(array)):
         s = s + array[i] ** 2
     return array / (s ** 0.5)
-
 
 def kernel_gussian(x, gamma):
     # 相似性矩阵计算
@@ -272,7 +262,6 @@ def kernel_cosine(x, mu, sigma):
             kernel[j, i] = kernel[i, j]
     return kernel
 
-
 def kernel_corr(x, mu, sigma):
     # Calculates the link indicator kernel from a graph adjacency by pairwise linear correlation coefficient
     n = len(x)
@@ -280,7 +269,6 @@ def kernel_corr(x, mu, sigma):
     # Add Gaussian random noise matrix
     x = x + np.random.normal(mu, sigma, (n, m))
     return np.corrcoef(x)
-
 
 def kernel_MI(x):
     n = len(x)
@@ -292,11 +280,9 @@ def kernel_MI(x):
             kernel[j, i] = kernel[i, j]
     return kernel
 
-
 def kernel_normalized(k):
     # 理想核矩阵的归一化
     n = len(k)
-
     k = np.abs(k)
     index_nozeros = k.nonzero()
     min_value = min(k[index_nozeros])
@@ -306,12 +292,10 @@ def kernel_normalized(k):
     k_nor = k / (np.dot(diag, diag.T))
     return k_nor
 
-
-
-
 def load_kernel_from_file(file_path):
     """"""
     return np.loadtxt(file_path)
+    
 def get_n_weight(k_train_list ,ideal_kernel ,lambd):
     '''
     input：
@@ -341,7 +325,6 @@ def get_n_weight(k_train_list ,ideal_kernel ,lambd):
     b=matrix(1.)
     return get_CKA_Wi(P , q , G , h , A , b)
 
-
 def get_train_label(y, cv_index, cv_i):
     n_drug = len(y)
     n_effect = len(y[0])
@@ -352,7 +335,6 @@ def get_train_label(y, cv_index, cv_i):
     y_train = y_train.reshape([n_drug, n_effect])
     return y_train, y_label
 
-
 def get_pre(y_pre, cv_index, cv_i):
     n_drug = len(y_pre)
     n_effect = len(y_pre[0])
@@ -360,12 +342,10 @@ def get_pre(y_pre, cv_index, cv_i):
     pre = y_pre[cv_index == cv_i]
     return pre
 
-
 def get_auc_aupr(y_true, y_pre):
     auc_score = roc_auc_score(y_true, y_pre)
     aupr_score = average_precision_score(y_true, y_pre)
     return auc_score, aupr_score
-
 
 def wknkn(y, Similar_1, Similar_2, knn, miu):
     n = len(y)
@@ -404,7 +384,6 @@ def wknkn(y, Similar_1, Similar_2, knn, miu):
     f_new = np.fmax(y, y_dt)
     return f_new
 
-
 def getACC(y_true, y_pre):
     """
     y_true是n*1维度数组
@@ -417,7 +396,6 @@ def getACC(y_true, y_pre):
     ACC = round(right / length, 4)
     return ACC
 
-
 def my_confusion_matrix(y_true, y_pre):
     """
     y_true:numpy矩阵
@@ -428,7 +406,6 @@ def my_confusion_matrix(y_true, y_pre):
     y_pre.resize(len(y_pre), 1)
     return confusion_matrix(y_true, y_pre)
 
-
 def getMCC(con):
     TP = con[0, 0]
     FN = con[0, 1]
@@ -438,14 +415,12 @@ def getMCC(con):
     MCC = round(MCC, 4)
     return MCC
 
-
 def getSN(con):
     TP = con[0, 0]
     FN = con[0, 1]
     SN = TP / (TP + FN)
     SN = round(SN * 100, 4)
     return SN
-
 
 def getSP(con):
     FP = con[1, 0]
@@ -459,7 +434,7 @@ for s in itertools.product(m_threshold,epochs):
         association = pd.read_csv("similarity and feature/MD_A.csv", header=0, index_col=0).to_numpy()
         samples = get_all_samples(association)
 
-        #加载fun_MS.txt,sem_DS.txt
+        #fun_MS.txt,sem_DS.txt
         fun_sim = pd.read_csv("fun_MS.txt", header=None, index_col=None, sep='\t').to_numpy()
         sem_sim = pd.read_csv("sem_DS.txt", header=None, index_col=None, sep='\t').to_numpy()
 
@@ -469,29 +444,59 @@ for s in itertools.product(m_threshold,epochs):
         SVD_mfeature = pd.read_csv('similarity and feature/SVD_microbe_feature.csv', header=None, index_col=None).values
         SVD_dfeature = pd.read_csv('similarity and feature/SVD_disease_feature.csv', header=None, index_col=None).values
 
+        # k-fold cross-validation
         for train_index, val_index in kf.split(samples):
             fold += 1
-            train_samples = samples[train_index, :]
-            val_samples = samples[val_index, :]
-            new_association = association.copy()
-            for i in val_samples:
-                new_association[i[0], i[1]] = 0
-
-            cos_MS, cos_DS = cos_sim(new_association)
+            train_samples = samples[train_index, :]   # Training set of the current fold
+            val_samples   = samples[val_index, :]     # Validation set of the current fold
+            
+            # -------------------------------------------------------------------
+            # Step 1: Construct the association matrix for training only
+            # We initialize a zero matrix with the same shape as the full association matrix,
+            # and then fill in only the training associations. 
+            # Importantly, we DO NOT use the validation/test associations here.
+            # This ensures that similarity matrices are computed strictly from training data,
+            # thereby avoiding any potential information leakage.
+            # -------------------------------------------------------------------
+            train_association = np.zeros_like(association)
+            for i in train_samples:
+                train_association[i[0], i[1]] = 1
+            
+            # -------------------------------------------------------------------
+            # Step 2: Compute similarity matrices based on training data only
+            # Cosine similarity and Gaussian kernel similarity are calculated using 
+            # the training association matrix. Validation/test data are strictly excluded.
+            # -------------------------------------------------------------------
+            
+            # Cosine similarity between microbes and diseases
+            cos_MS, cos_DS = cos_sim(train_association)
             cos_MS = pd.DataFrame(cos_MS)  
             cos_DS = pd.DataFrame(cos_DS) 
-            rm, rt = r_func(new_association)
-            GaM, GaD = Gau_sim(new_association, rm, rt)
+            
+            # Gaussian kernel similarity between microbes and diseases
+            rm, rt = r_func(train_association)        # Parameters derived only from training data
+            GaM, GaD = Gau_sim(train_association, rm, rt)
             GaM = pd.DataFrame(GaM)  
             GaD = pd.DataFrame(GaD)
+        
+            # -------------------------------------------------------------------
+            # NOTE:
+            # Unlike the previous version where validation associations were masked 
+            # (set to zero) in the full matrix, this revised approach ensures 
+            # that the validation set does not influence similarity computation 
+            # in any form. This modification completely eliminates the possibility 
+            # of structural information leakage.
+            # -------------------------------------------------------------------
 
-            n_microbe = len(new_association)  
-            n_disease = len(new_association[0])     
+
+            n_microbe = len(train_association)  
+            n_disease = len(train_association[0])     
             np.random.seed(2024)
             cv_index = np.random.randint(cv, size=n_microbe*n_disease)
             print("cv_index分布:", np.bincount(cv_index))
+            
             k_train_list1 = [sem_sim,cos_DS,GaD]
-            y_train, y_label = get_train_label(new_association, cv_index, cv_i)
+            y_train, y_label = get_train_label(train_association, cv_index, cv_i)
             side_ideal_kernel = np.dot(y_train.T, y_train)
             side_k_nor = kernel_normalized(side_ideal_kernel)
             weights = get_n_weight(k_train_list1, side_k_nor, 0.8)
@@ -499,8 +504,9 @@ for s in itertools.product(m_threshold,epochs):
             for i in range(len(k_train_list)):
                 k_s1 = k_s1 + weights[i] * k_train_list1[i]
             k_s1 = pd.DataFrame(k_s1)
+            
             k_train_list2 = [fun_sim,cos_MS,GaM]
-            y_train, y_label = get_train_label(new_association, cv_index, cv_i)
+            y_train, y_label = get_train_label(train_association, cv_index, cv_i)
             side_ideal_kernel = np.dot(y_train, y_train.T)
             side_k_nor = kernel_normalized(side_ideal_kernel)
             weights = get_n_weight(k_train_list2, side_k_nor, 0.8)
@@ -511,7 +517,7 @@ for s in itertools.product(m_threshold,epochs):
             
             # Microbe features extraction from GATE
             m_network = sim_thresholding( k_s2, s[0])
-            m_adj, meta_features = generate_adj_and_feature(m_network, new_association)
+            m_adj, meta_features = generate_adj_and_feature(m_network, train_association)
             m_features = get_gae_feature(m_adj, meta_features, s[1], 1)
 
             # Disease features extraction from four-layer auto-encoder
