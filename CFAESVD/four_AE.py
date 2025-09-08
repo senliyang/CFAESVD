@@ -7,6 +7,7 @@ from sklearn import preprocessing
 from keras import utils
 
 
+
 def data_process(d_sim,new_association):
 
     R_A = np.repeat(new_association, repeats=134, axis=0)#(157718,134)
@@ -55,6 +56,7 @@ def four_AE(d_sim, new_association):
     dtrain, label = data_process(d_sim, new_association)
     d_features = disease_auto_encoder(dtrain)
     return d_features
+
 
 
 
