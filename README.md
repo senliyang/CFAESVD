@@ -12,12 +12,12 @@ lar Value Decomposition (SVD) module to extract linear features for both microbe
 a Graph Attention Encoder (GATE) module for the nonlinear features of microbes. These features are
 concatenated into feature vectors representing microbe-disease pairs. Finally, these vectors are input
 into an modifyed Cascade Forest model for prediction. Experimental results show that under five-fold
-cross-validation, the model achieves an AUC of 0.9891 and an AUPR of 0.9865, surpassing several
+cross-validation, the model achieves an AUC of 0.9748 and an AUPR of 0.9732, surpassing several
 advanced prediction models. Additionally, case studies confirm the CFAESVD model’s effectiveness
 in predicting microbial associations with conditions such as obesity and Crohn’s disease, further
 validating its reliability.CFAESVD is publicly available at https://github.com/senliyang/CFAESVD.
 # Flowchart
-![image](https://github.com/senliyang/CFAESVD/blob/main/CFAESVD/CFAESVD3.png)
+![image](https://github.com/senliyang/CFAESVD/blob/main/CFAESVD/CFAESVD终.png)
 # Requirements
 numpy                     1.19.2          
 pandas                    1.1.5           
