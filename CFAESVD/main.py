@@ -522,7 +522,7 @@ for s in itertools.product(m_threshold,epochs):
             m_features = get_gae_feature(m_adj, meta_features, s[1], 1)
 
             # Disease features extraction from four-layer auto-encoder
-            d_features = four_AE(d_sim,  k_s1)
+            d_features = four_AE(k_s1,train_association)
 
             # get feature and label
             train_feature, train_label = generate_f1(D, train_samples, m_features, d_features, SVD_mfeature, SVD_dfeature)
