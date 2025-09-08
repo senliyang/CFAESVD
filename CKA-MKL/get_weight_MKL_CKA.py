@@ -10,6 +10,7 @@ from cvxopt  import matrix
 from kernel import  kernel_normalized
 def load_kernel_from_file(file_path):
     """"""
+    
     return np.loadtxt(file_path)
 def get_n_weight(k_train_list ,ideal_kernel ,lambd):
     '''
@@ -79,3 +80,4 @@ for cv_i in range(cv):
          for i in range(len(k_train_list)):
              k_s = k_s + weights[i] * k_train_list[i]
          np.savetxt('data/microbe/CKA-microbe.txt', k_s, delimiter=' ')
+
