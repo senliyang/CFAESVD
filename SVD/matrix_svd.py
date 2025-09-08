@@ -10,6 +10,7 @@ pca_maxiter = 200
 def vector_to_diagonal(vector):
     """
     
+    
     :param vector:
     :return:
     """
