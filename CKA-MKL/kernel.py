@@ -9,6 +9,7 @@ np.random.seed(2024)
 def kernel_normalized(k):
     #理想核矩阵的归一化
     n = len(k)
+
     
     k = np.abs(k)
     index_nozeros = k.nonzero()
@@ -21,4 +22,5 @@ def kernel_normalized(k):
     return k_nor
             
     
+
 
