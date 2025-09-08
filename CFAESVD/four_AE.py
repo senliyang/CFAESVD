@@ -8,9 +8,9 @@ from keras import utils
 
 
 
-def data_process(d_sim,new_association):
+def data_process(d_sim,train_association):
 
-    R_A = np.repeat(new_association, repeats=134, axis=0)#(157718,134)
+    R_A = np.repeat(train_association, repeats=134, axis=0)#(157718,134)
     # print(R_A.shape)
     sd = nm.repmat(d_sim, 1177, 1)#(157718,134)
     # print(sd.shape)
@@ -51,11 +51,12 @@ def disease_auto_encoder(y_train):
     return disease_encoded_vector
 
 
-def four_AE(d_sim, new_association):
+def four_AE(d_sim, train_association):
 
-    dtrain, label = data_process(d_sim, new_association)
+    dtrain, label = data_process(d_sim, train_association)
     d_features = disease_auto_encoder(dtrain)
     return d_features
+
 
 
 
