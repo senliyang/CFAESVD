@@ -1,6 +1,8 @@
 1# -*- coding: utf-8 -*-
 """
 """
+
+
 import numpy as np
 np.random.seed(2024)
 def getMB( np_array):
@@ -60,3 +62,4 @@ def get_mu(array):
     return array/(s**0.5)
     
     
+
