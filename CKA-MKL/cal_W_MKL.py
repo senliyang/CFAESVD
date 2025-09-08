@@ -8,6 +8,7 @@ min 1/2 XT*P*X + qT*X
 import numpy as np
 from cvxopt  import solvers,matrix
 
+
 np.random.seed(2024)
 def get_CKA_Wi(P , q , G , h , A , b):
     '''
@@ -81,6 +82,7 @@ def get_q(train_x_k_list , ideal_kernel):
     for i in range(l):
         a[i,0] = get_trace(np.dot(np.dot(Un , train_x_k_list[i]),Un) , Ki )
     return a
+
 
 
 
